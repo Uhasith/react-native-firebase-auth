@@ -13,14 +13,14 @@ const BottomLoginSheet = () => {
       {/* <TouchableOpacity style={[defaultStyles.btn, styles.btnLight]}>
         <Ionicons name="logo-apple" size={14} style={styles.btnIcon} />
         <Text style={styles.btnLightText}>Continue with Apple</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[defaultStyles.btn, styles.btnDark]}>
+      </TouchableOpacity> */}
+      {/* <TouchableOpacity style={[defaultStyles.btn, styles.btnDark]}>
         <Ionicons name="logo-google" size={16} style={styles.btnIcon} color={'#fff'}/>
         <Text style={styles.btnDarkText}>Continue with Google</Text>
       </TouchableOpacity> */}
       <Link
         href={{
-          pathname: "/login",
+          pathname: "/auth",
           params: {
             type: "register",
           },
@@ -40,7 +40,7 @@ const BottomLoginSheet = () => {
       </Link>
       <Link
         href={{
-          pathname: "/login",
+          pathname: "/auth",
           params: {
             type: "login",
           },

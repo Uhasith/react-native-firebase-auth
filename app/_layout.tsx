@@ -6,7 +6,7 @@ import {
 import { useFonts } from "expo-font";
 import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "react-native-reanimated";
 import { useColorScheme } from "@/components/useColorScheme";
 import { View, ActivityIndicator, Text } from "react-native";
@@ -14,10 +14,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
-
-export const unstable_settings = {
-  initialRouteName: "/(tabs)",
-};
 
 export default function RootLayout() {
   const [fontsLoaded, error] = useFonts({
@@ -74,10 +70,10 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack initialRouteName="index">
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen
-          name="login"
+          name="auth"
           options={{
             title: "",
             headerTitleStyle: {

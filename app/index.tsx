@@ -17,7 +17,7 @@ export default function Index() {
 
       // Redirect to tabs screen if user is logged in
       if (user) {
-        router.push("/(tabs)");
+        router.push("/(tabs)/home");
       }
     });
 
@@ -34,11 +34,9 @@ export default function Index() {
 
   // If not logged in, show the intro and login sheet
   return (
-    <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
         <AnimatedIntro />
         <BottomLoginSheet />
       </View>
-    </SafeAreaView>
   );
 }

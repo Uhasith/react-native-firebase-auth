@@ -24,7 +24,7 @@ export default function TabLayout() {
   const handleSignOut = async () => {
     try {
       await auth.signOut();
-      router.replace("/login");
+      router.replace("/auth");
     } catch (error) {
       console.log("Error signing out: ", error);
     }
@@ -35,7 +35,7 @@ export default function TabLayout() {
     const unsubscribe = getAuth().onAuthStateChanged((user) => {
       setIsLoading(false); // Auth check done, stop loading
       if (!user) {
-        router.replace("/login"); // Redirect if not logged in
+        router.replace("/auth"); // Redirect if not logged in
       }
     });
 
@@ -48,6 +48,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      initialRouteName="home"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: true, // Ensure header is shown
@@ -66,7 +67,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,

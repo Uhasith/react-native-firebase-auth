@@ -62,7 +62,7 @@ const Page = () => {
     setLoading(true);
     try {
       const user = await signInWithEmailAndPassword(authUser, email, password);
-      if (user) router.replace("/(tabs)");
+      if (user) router.replace("/(tabs)/home");
     } catch (error: any) {
       console.log(error);
       Alert.alert("Log in failed", error.message, [
@@ -82,7 +82,7 @@ const Page = () => {
         email,
         password
       );
-      if (user) router.replace("/(tabs)");
+      if (user) router.replace("/(tabs)/home");
     } catch (error: any) {
       console.log(error);
       Alert.alert("Sign up failed", error.message, [
