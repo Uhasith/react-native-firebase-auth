@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
-  Button,
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
@@ -9,12 +8,14 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Modal,
+  ScrollView,
 } from "react-native";
+import { router } from "expo-router";
 import { Text, View } from "@/components/Themed";
 import { db } from "@/FirebaseConfig";
-import { collection, getDocs, query, where } from "firebase/firestore"; // Import Firestore methods
-import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons"; // For icons
+import { collection, getDocs } from "firebase/firestore";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,9 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([] as any);
   const [cart, setCart] = useState([]);
-  const [filterType, setFilterType] = useState(""); // For filtering by type
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null as any);
+  const [currentFilter, setCurrentFilter] = useState("" as any);
 
   // Fetch products from Firestore on component mount
   useEffect(() => {
@@ -47,6 +50,7 @@ export default function Home() {
 
   // Filter products by type
   const filterByType = (type: string) => {
+    setCurrentFilter(type);
     if (type === "") {
       setFilteredProducts(products); // Show all if no filter is selected
     } else {
@@ -70,6 +74,12 @@ export default function Home() {
     alert(`${product.name} added to cart!`);
   };
 
+  // Open Modal to show product details
+  const showProductDetails = (product: any) => {
+    setSelectedProduct(product);
+    setModalVisible(true);
+  };
+
   // Render product item
   const renderProduct = ({ item }: { item: any }) => (
     <View style={styles.productCard}>
@@ -81,6 +91,12 @@ export default function Home() {
         onPress={() => addToCart(item)}
       >
         <Text style={styles.addButtonText}>Add to Cart</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.infoButton}
+        onPress={() => showProductDetails(item)}
+      >
+        <Text style={styles.infoButtonText}>More info</Text>
       </TouchableOpacity>
     </View>
   );
@@ -124,25 +140,37 @@ export default function Home() {
 
       <View style={styles.filterContainer}>
         <TouchableOpacity
-          style={styles.filterButton}
+          style={[
+            styles.filterButton,
+            currentFilter === "" && styles.activeFilterButton, // Highlight if "All" is selected
+          ]}
           onPress={() => filterByType("")}
         >
           <Text style={styles.filterText}>All</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={styles.filterButton}
+          style={[
+            styles.filterButton,
+            currentFilter === "Dry Food" && styles.activeFilterButton, // Highlight if "Dry Food" is selected
+          ]}
           onPress={() => filterByType("Dry Food")}
         >
           <Text style={styles.filterText}>Dry Food</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={styles.filterButton}
+          style={[
+            styles.filterButton,
+            currentFilter === "Grain-Free" && styles.activeFilterButton, // Highlight if "Grain-Free" is selected
+          ]}
           onPress={() => filterByType("Grain-Free")}
         >
           <Text style={styles.filterText}>Grain-Free</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={styles.filterButton}
+          style={styles.filterButton} // No need to check filter for "Refresh"
           onPress={() => fetchProducts()}
         >
           <Text style={styles.filterText}>Refresh</Text>
@@ -155,6 +183,46 @@ export default function Home() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.productList}
       />
+
+      {selectedProduct && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={styles.modalView}>
+              <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <Image
+                  source={{ uri: selectedProduct.image }}
+                  style={styles.modalImage}
+                />
+                <Text style={styles.modalTitle}>{selectedProduct.name}</Text>
+                <Text style={styles.modalPrice}>
+                  ${selectedProduct.price.toFixed(2)}
+                </Text>
+                <Text style={styles.modalText}>
+                  Type: {selectedProduct.type}
+                </Text>
+                <Text style={styles.modalText}>
+                  Brand: {selectedProduct.brand}
+                </Text>
+                <Text style={styles.modalText}>
+                  Description: {selectedProduct.description}
+                </Text>
+
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          </SafeAreaView>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -188,12 +256,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
-    borderRadius: 25, // Make the search field rounded
+    borderRadius: 25,
     paddingHorizontal: 15,
     paddingVertical: 10,
     marginVertical: 10,
-    width: "90%", // Adjust width as needed
-    alignSelf: "center", // Center the search field
+    width: "90%",
+    alignSelf: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -214,11 +282,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
   },
   filterButton: {
-    backgroundColor: "#007bff", // Blue background, change to any color you like
+    backgroundColor: "#007bff",
     paddingVertical: 8,
     paddingHorizontal: 15,
-    borderRadius: 20, // Rounded edges for badge-like look
-    marginHorizontal: 5, // Space between badges
+    borderRadius: 20,
+    marginHorizontal: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -226,10 +294,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   filterText: {
-    color: "#fff", // White text color
+    color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  activeFilterButton: {
+    backgroundColor: "#088F8F",
   },
   productList: {
     paddingVertical: 20,
@@ -273,6 +344,76 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: "#fff",
     fontSize: 14,
+    fontWeight: "bold",
+  },
+  infoButton: {
+    backgroundColor: "#088F8F",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  infoButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalView: {
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  scrollContainer: {
+    alignItems: "center",
+  },
+  modalImage: {
+    width: 250,
+    height: 250,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  modalPrice: {
+    fontSize: 18,
+    color: "green",
+    marginBottom: 20,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  closeButton: {
+    backgroundColor: "#007bff",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });
